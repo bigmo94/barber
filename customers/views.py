@@ -3,8 +3,11 @@ from django.contrib.auth import get_user_model
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from customers.serializer import UserRegisterSerializer, VerifyUserSerializer
+from customers.serializer import UserRegisterSerializer, VerifyUserSerializer, UserSerializer
+from customers.permissions import IsActivated, IsOwner
 
 User = get_user_model()
 
@@ -29,3 +32,13 @@ class UserRegisterViewSet(viewsets.GenericViewSet,
         instance.save()
         tokens = instance.get_token()
         return Response(tokens)
+
+
+class UserProfileViewSet(viewsets.GenericViewSet,
+                         mixins.RetrieveModelMixin,
+                         mixins.UpdateModelMixin):
+    queryset = User.objects.all()
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsActivated, IsOwner]
+    serializer_class = UserSerializer
+    lookup_field = 'pk'

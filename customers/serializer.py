@@ -41,3 +41,10 @@ class VerifyUserSerializer(serializers.Serializer):
             return attrs
         else:
             raise ValidationError('Wrong verify code')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'birthday', 'email',
+                  'phone', 'gender', 'created_time', 'avatar']

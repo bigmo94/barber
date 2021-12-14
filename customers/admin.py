@@ -7,11 +7,11 @@ User = get_user_model()
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'first_name', 'last_name', 'birthday', 'email',
+    list_display = ['id', 'username', 'first_name', 'last_name', 'birthday', 'email',
                     'phone', 'gender', 'avatar', 'is_active']
-    readonly_fields = ['get_access', 'password']
+    readonly_fields = ['password']
     fieldsets = (
-        (None, {'fields': ('username', 'password', 'get_access')}),
+        (None, {'fields': ('username', 'password')}),
         (_('Personal info'),
          {'fields': ('first_name', 'last_name', 'email', 'phone', 'birthday', 'gender', 'avatar')}),
         (_('Permissions'), {

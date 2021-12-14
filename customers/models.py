@@ -1,10 +1,10 @@
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import ugettext_lazy as _
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from customers.utils import validate_birthday
+from services.models import Service
 
 
 class User(AbstractUser):
@@ -31,14 +31,25 @@ class User(AbstractUser):
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
-    def get_access(self):
-        return str(RefreshToken.for_user(self).access_token)
 
-    def get_refresh(self):
-        return str(RefreshToken.for_user(self))
+class Store(models.Model):
+    FOR_MEN = 1
+    FOR_WOMEN = 2
+    FOR_EVERYONE = 3
 
-    def get_token(self):
-        return {
-            'access': self.get_access(),
-            'refresh': self.get_refresh(),
-        }
+    TYPE_CHOICES = {
+        (FOR_MEN, _('for men')),
+        (FOR_WOMEN, _('for women')),
+        (FOR_EVERYONE, _('for everyone'))
+    }
+
+    service = models.ForeignKey(to=Service, verbose_name=_('service'), related_name='stores', on_delete=models.PROTECT)
+    name = models.CharField(verbose_name=_('name'), max_length=255)
+    logo = models.ImageField(verbose_name=_('logo'), upload_to='customers/store/logo', blank=True, null=True)
+    address = models.TextField(verbose_name=_('address'))
+    phone = models.CharField(verbose_name=_('phone number'), max_length=50, unique=True)
+    store_type = models.IntegerField(_('store type'), choices=TYPE_CHOICES, default=FOR_EVERYONE)
+    description = models.TextField(verbose_name=_('description'), blank=True, null=True)
+    rate = models.DecimalField(verbose_name=_('discount'), max_digits=5, decimal_places=2, null=True, blank=True,
+                               validators=[MinValueValidator(0), MaxValueValidator(100)])
+    is_active = models.BooleanField(_('active'), default=False)

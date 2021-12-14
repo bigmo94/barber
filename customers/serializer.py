@@ -1,5 +1,7 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.core.cache import cache
+from django.db import IntegrityError
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -18,9 +20,13 @@ class UserRegisterSerializer(serializers.Serializer):
         phone = validated_data.get('phone')
         user = User.objects.filter(phone=phone).last()
         if not user:
-            user = User.objects.create_user(**validated_data)
+            try:
+                user = User.objects.create_user(**validated_data)
+            except IntegrityError:
+                raise ValidationError("ERROR: Duplicate values")
         if not user.is_active:
             verify_code = code_generator()
+            print(verify_code)
             cache_key = 'login_code_{}'.format(phone)
             cache.set(cache_key, verify_code, timeout=120)
             send_verification_code_task.apply_async((user.phone, verify_code))
@@ -40,11 +46,13 @@ class VerifyUserSerializer(serializers.Serializer):
         if sent_code and sent_code == input_code:
             return attrs
         else:
-            raise ValidationError('Wrong verify code')
+            raise ValidationError(_('Wrong verify code'))
 
 
 class UserSerializer(serializers.ModelSerializer):
+    gender_display = serializers.CharField(source='get_gender_display', read_only=True)
+
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'birthday', 'email',
-                  'phone', 'gender', 'created_time', 'avatar']
+                  'phone', 'gender_display', 'created_time', 'avatar']

@@ -52,8 +52,8 @@ class Service(models.Model):
 
 
 class ServiceLog(models.Model):
-    user = models.ForeignKey(to=User, verbose_name=_('user'), on_delete=models.PROTECT)
-    service = models.ForeignKey(to=Service, verbose_name=_('service'), on_delete=models.PROTECT)
+    user = models.ForeignKey(to=User, verbose_name=_('user'), related_name='service_logs', on_delete=models.PROTECT)
+    service = models.ForeignKey(to=Service, verbose_name=_('service'), related_name='service_logs', on_delete=models.PROTECT)
     created_time = models.DateField(verbose_name=_('created time'), auto_now_add=True)
 
     def __str__(self):
@@ -61,8 +61,8 @@ class ServiceLog(models.Model):
 
 
 class Reservation(models.Model):
-    user = models.ForeignKey(to=User, verbose_name=_('user'), related_name='users', on_delete=models.PROTECT)
-    service = models.ForeignKey(to=Service, verbose_name=_('service'), related_name='services',
+    user = models.ForeignKey(to=User, verbose_name=_('user'), related_name='reservations', on_delete=models.PROTECT)
+    service = models.ForeignKey(to=Service, verbose_name=_('service'), related_name='reservations',
                                 on_delete=models.PROTECT)
     reserve_time = models.DateTimeField(verbose_name=_('reserve time'), unique=True)
     description = models.TextField(_('Descriptions'), blank=True, null=True)

@@ -1,4 +1,5 @@
 import os
+from django.utils import timezone
 from pathlib import Path
 
 from decouple import config, Csv
@@ -111,6 +112,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timezone.timedelta(seconds=config('USER_ACCESS_TOKEN_LIFETIME', default=7200, cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timezone.timedelta(seconds=config('USER_REFRESH_TOKEN_LIFETIME', default=7200, cast=int)),
+    "ROTATE_REFRESH_TOKENS": True
 }
 
 EMAIL_HOST = config('EMAIL_HOST')

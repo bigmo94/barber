@@ -25,8 +25,6 @@ class Service(models.Model):
         (TYPE_SOLARIUM, _('Solarium')),
         (TYPE_SKIN_CLEANING, _('Skin Cleaning')),
     )
-    employee = models.ForeignKey(to='customers.Employee', verbose_name=_('employee'), related_name='employees',
-                                 on_delete=models.PROTECT)
     service_type = models.IntegerField(verbose_name=_('service type'), choices=SERVICES, unique=True)
     price = models.IntegerField(verbose_name=_('Price'))
     discount = models.DecimalField(verbose_name=_('discount'), max_digits=5, decimal_places=2, null=True, blank=True,
@@ -37,7 +35,7 @@ class Service(models.Model):
     updated_time = models.DateField(verbose_name=_('updated time'), auto_now=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.service_type, self.price)
+        return '{} - {}'.format(self.get_service_type_display(), self.price)
 
     def save(self, *args, **kwargs):
         self.discount = self.discount or 0
@@ -51,17 +49,6 @@ class Service(models.Model):
     @staticmethod
     def calculate_discount(price, discount):
         return price - ((price * discount) / 100)
-
-
-class ServiceLog(models.Model):
-    user = models.ForeignKey(to='customers.User', verbose_name=_('user'), related_name='service_logs',
-                             on_delete=models.PROTECT)
-    service = models.ForeignKey(to='Service', verbose_name=_('service'), related_name='service_logs',
-                                on_delete=models.PROTECT)
-    created_time = models.DateField(verbose_name=_('created time'), auto_now_add=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.user, self.service)
 
 
 class Reservation(models.Model):
@@ -81,8 +68,22 @@ class Reservation(models.Model):
                                 on_delete=models.PROTECT)
     date = models.DateField(verbose_name='date')
     started_time = models.TimeField(verbose_name=_('started time'), default=datetime.time(hour=10, minute=0))
-    ended_time = models.DateTimeField(verbose_name=_('ended_time'), default=datetime.time(hour=11, minute=0))
+    ended_time = models.TimeField(verbose_name=_('ended_time'), default=datetime.time(hour=11, minute=0))
     status = models.IntegerField(verbose_name='status', choices=STATUS_TYPE, default=STATUS_PENDING)
     is_available = models.BooleanField(verbose_name=_('is available'), default=True)
     description = models.TextField(_('Descriptions'), blank=True, null=True)
     created_time = models.DateField(verbose_name=_('created time'), auto_now_add=True)
+
+    def __str__(self):
+        return "{} - {} - {}".format(self.date, self.started_time, self.ended_time)
+
+
+class EmployeeWorkingTime(models.Model):
+    employee = models.ForeignKey(to='customers.Employee', verbose_name=_('employee'), on_delete=models.CASCADE)
+    service = models.ForeignKey(to='Service', verbose_name=_('service'), on_delete=models.CASCADE)
+    date = models.DateField(verbose_name='date')
+    started_time = models.TimeField(verbose_name=_('started time'), default=datetime.time(hour=10, minute=0))
+    ended_time = models.TimeField(verbose_name=_('ended_time'), default=datetime.time(hour=22, minute=0))
+
+    def __str__(self):
+        return self.employee.user.get_full_name()

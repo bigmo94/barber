@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import Service
+from .models import Service, Reservation, EmployeeWorkingTime
 
 
-admin.site.register(Service)
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ['service_type', 'price', 'discount', 'duration']
+
+
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ['service', 'user', 'date', 'started_time', 'ended_time', 'status', 'is_available']
+
+
+@admin.register(EmployeeWorkingTime)
+class EmployeeWorkingTimeAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'service', 'date', 'started_time', 'ended_time']

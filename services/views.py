@@ -2,12 +2,13 @@ from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.utils.translation import ugettext_lazy as _
 
 from customers.models import Employee
 from customers.permissions import IsEmployee
 from services.models import EmployeeWorkingTime
 from services.serializers import EmployeeWorkingTimeSerializer, EmployeeWorkingTimeDetailSerializer
+from message_handler.handler import get_message
+from message_handler import messages
 
 
 class EmployeeWorkingTimeViewSet(viewsets.GenericViewSet,
@@ -36,4 +37,4 @@ class EmployeeWorkingTimeViewSet(viewsets.GenericViewSet,
         serializer.is_valid(raise_exception=True)
         employee = Employee.objects.get(user=self.request.user)
         EmployeeWorkingTime.objects.get_or_create(employee=employee, **serializer.validated_data)
-        return Response(_('Your working time was recorded'))
+        return Response(get_message(messages.SUCCESS_WORKING_TIME_WAS_RECORDED))

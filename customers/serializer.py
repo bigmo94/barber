@@ -1,13 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import IntegrityError
-from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ParseError
 
 from customers.models import Employee
 from customers.tasks import send_verification_code_task
 from customers.utils import code_generator
+from message_handler.handler import get_message
+from message_handler import messages
 
 User = get_user_model()
 
@@ -24,7 +25,7 @@ class UserRegisterSerializer(serializers.Serializer):
             try:
                 user = User.objects.create_user(**validated_data)
             except IntegrityError:
-                raise ValidationError("ERROR: Duplicate values")
+                raise ParseError(get_message(messages.ERROR_DUPLICATE_VALUE))
         if not user.is_enable:
             verify_code = code_generator()
             cache_key = 'login_code_{}'.format(phone)
@@ -46,7 +47,7 @@ class VerifyUserSerializer(serializers.Serializer):
         if sent_code and sent_code == input_code:
             return attrs
         else:
-            raise ValidationError(_('Wrong verify code'))
+            raise ParseError(get_message(messages.ERROR_WRONG_VERIFY_CODE))
 
 
 class UserSerializer(serializers.ModelSerializer):

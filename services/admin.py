@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Service, Reservation, EmployeeWorkingTime
+from services.models import Service, Reservation, EmployeeWorkingTime
 
 
 @admin.register(Service)

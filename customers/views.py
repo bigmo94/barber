@@ -7,8 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
+from rest_framework.exceptions import ParseError
 
 from customers.utils import code_generator
 from customers.tasks import send_forget_pass_code_task
@@ -18,6 +17,8 @@ from customers.serializer import (UserRegisterSerializer,
                                   ForgotPasswordSerializer,
                                   VerifyResetPassCodeSerializer, )
 from customers.permissions import IsOwner, IsEnabled
+from message_handler.handler import get_message
+from message_handler import messages
 
 User = get_user_model()
 
@@ -64,14 +65,14 @@ class ForgetPasswordAPIView(generics.GenericAPIView):
         try:
             user = User.objects.get(username=serializer.validated_data.get('username'))
         except User.DoesNotExist:
-            raise ValidationError(_('Not found any user by this username'))
+            raise ParseError(get_message(messages.ERROR_NOT_FOUND_ANY_USER_BY_THIS_USERNAME))
 
         verify_code = code_generator()
         cache_key = 'forget_pass_code_{}'.format(user.phone)
         cache.set(cache_key, verify_code, timeout=120)
         send_forget_pass_code_task.apply_async((user.phone, verify_code))
 
-        return Response(_('The reset code was sent'))
+        return Response(get_message(messages.SUCCESS_RESET_CODE_WAS_SENT))
 
 
 class VerifyResetPassCodeAPIView(generics.GenericAPIView):
@@ -84,7 +85,7 @@ class VerifyResetPassCodeAPIView(generics.GenericAPIView):
         try:
             user = User.objects.get(username=serializer.validated_data.get('username'))
         except User.DoesNotExist:
-            raise ValidationError(_('Not found any user by this username'))
+            raise ParseError(get_message(messages.ERROR_NOT_FOUND_ANY_USER_BY_THIS_USERNAME))
 
         cache_key = 'forget_pass_code_{}'.format(user.phone)
         sent_code = cache.get(cache_key, None)
@@ -93,6 +94,6 @@ class VerifyResetPassCodeAPIView(generics.GenericAPIView):
         if sent_code and sent_code == input_code:
             return Response('ok')
         else:
-            raise ValidationError(_('Wrong verify code'))
+            raise ParseError(get_message(messages.ERROR_WRONG_VERIFY_CODE))
 
 

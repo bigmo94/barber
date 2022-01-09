@@ -1,8 +1,11 @@
 import random
 
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ParseError
 from django.utils import timezone
 from kavenegar import KavenegarAPI, APIException, HTTPException
+
+from message_handler.handler import get_message
+from message_handler import messages
 
 
 def code_generator():
@@ -11,7 +14,7 @@ def code_generator():
 
 def validate_birthday(value):
     if value > timezone.now().date():
-        raise ValidationError('birthday field is not valid')
+        raise ParseError(get_message(messages.ERROR_BIRTHDAY_FIELD_IS_NOT_VALID))
     return value
 
 

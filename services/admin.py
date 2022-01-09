@@ -9,9 +9,9 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ['service', 'user', 'date', 'started_time', 'ended_time', 'status', 'is_available']
+    list_display = ['service', 'employee', 'user', 'date', 'started_time', 'ended_time', 'status', 'is_available']
 
 
 @admin.register(EmployeeWorkingTime)
 class EmployeeWorkingTimeAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'service', 'date', 'started_time', 'ended_time']
+    list_display = ['employee', 'date', 'started_time', 'ended_time']

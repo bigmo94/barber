@@ -54,6 +54,7 @@ class Store(models.Model):
     logo = models.ImageField(verbose_name=_('logo'), upload_to='customers/store/logo', blank=True, null=True)
     address = models.TextField(verbose_name=_('address'))
     phone = models.CharField(verbose_name=_('phone number'), max_length=50, unique=True)
+    url = models.URLField(verbose_name=_('url'), max_length=255, blank=True, null=True, unique=True)
     store_type = models.IntegerField(verbose_name=_('store type'), choices=TYPE_CHOICES, default=FOR_EVERYONE)
     client_id = models.UUIDField(verbose_name=_('API KEY'),
                                  max_length=50,

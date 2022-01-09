@@ -25,7 +25,7 @@ class Service(models.Model):
         (TYPE_SOLARIUM, _('Solarium')),
         (TYPE_SKIN_CLEANING, _('Skin Cleaning')),
     )
-    service_type = models.IntegerField(verbose_name=_('service type'), choices=SERVICES, unique=True)
+    service_type = models.IntegerField(verbose_name=_('service type'), choices=SERVICES)
     price = models.IntegerField(verbose_name=_('Price'))
     discount = models.DecimalField(verbose_name=_('discount'), max_digits=5, decimal_places=2, null=True, blank=True,
                                    validators=[MinValueValidator(0), MaxValueValidator(100)])
@@ -66,6 +66,8 @@ class Reservation(models.Model):
                              on_delete=models.PROTECT, null=True)
     service = models.ForeignKey(to='Service', verbose_name=_('service'), related_name='reservations',
                                 on_delete=models.PROTECT)
+    employee = models.ForeignKey(to='customers.Employee', verbose_name=_('employee'), related_name='reservations',
+                                 on_delete=models.PROTECT)
     date = models.DateField(verbose_name='date')
     started_time = models.TimeField(verbose_name=_('started time'), default=datetime.time(hour=10, minute=0))
     ended_time = models.TimeField(verbose_name=_('ended_time'), default=datetime.time(hour=11, minute=0))
@@ -80,7 +82,6 @@ class Reservation(models.Model):
 
 class EmployeeWorkingTime(models.Model):
     employee = models.ForeignKey(to='customers.Employee', verbose_name=_('employee'), on_delete=models.CASCADE)
-    service = models.ForeignKey(to='Service', verbose_name=_('service'), on_delete=models.CASCADE)
     date = models.DateField(verbose_name='date')
     started_time = models.TimeField(verbose_name=_('started time'), default=datetime.time(hour=10, minute=0))
     ended_time = models.TimeField(verbose_name=_('ended_time'), default=datetime.time(hour=22, minute=0))

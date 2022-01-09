@@ -1,7 +1,7 @@
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -26,6 +26,7 @@ class User(AbstractUser):
     gender = models.BooleanField(verbose_name=_('gender'), choices=GENDER_CHOICES, null=True, blank=True)
     avatar = models.ImageField(verbose_name=_('avatar'), blank=True, null=True, upload_to='customers/user/avatar')
     is_enable = models.BooleanField(verbose_name=_('is enable'), default=False)
+    is_employee = models.BooleanField(verbose_name=_('is employee'), default=False)
     created_time = models.DateField(verbose_name=_('created time'), auto_now_add=True)
     updated_time = models.DateField(verbose_name=_('updated time'), auto_now=True)
 
@@ -82,4 +83,3 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.user.get_full_name()
-

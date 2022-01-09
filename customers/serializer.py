@@ -1,10 +1,11 @@
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from customers.models import Employee
 from customers.tasks import send_verification_code_task
 from customers.utils import code_generator
 
@@ -24,9 +25,8 @@ class UserRegisterSerializer(serializers.Serializer):
                 user = User.objects.create_user(**validated_data)
             except IntegrityError:
                 raise ValidationError("ERROR: Duplicate values")
-        if not user.is_active:
+        if not user.is_enable:
             verify_code = code_generator()
-            print(verify_code)
             cache_key = 'login_code_{}'.format(phone)
             cache.set(cache_key, verify_code, timeout=120)
             send_verification_code_task.apply_async((user.phone, verify_code))
@@ -56,3 +56,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'first_name', 'last_name', 'birthday', 'email',
                   'phone', 'gender_display', 'created_time', 'avatar']
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=120)
+
+
+class VerifyResetPassCodeSerializer(ForgotPasswordSerializer):
+    verify_code = serializers.IntegerField(write_only=True)
+
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = ['user__first_name', 'store__name']

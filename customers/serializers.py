@@ -9,6 +9,7 @@ from customers.tasks import send_verification_code_task
 from customers.utils import code_generator
 from message_handler.handler import get_message
 from message_handler import messages
+from services.serializers import ServiceMinimalSerializer
 
 User = get_user_model()
 
@@ -73,15 +74,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = ['id', 'user__first_name', 'store__name']
 
 
-class StoreMinimalSerializer(serializers.ModelSerializer):
+class StoreSerializer(serializers.ModelSerializer):
+    store_type_display = serializers.CharField(source='get_store_type_display', read_only=True)
+    services_detail = ServiceMinimalSerializer(source='service', read_only=True, many=True)
+
     class Meta:
         model = Store
-        fields = ['id', 'name', 'logo', 'url']
-
-
-class StoreSerializer(StoreMinimalSerializer):
-    class Meta:
-        model = Store
-        fields = ['id', 'name', 'logo', 'url', 'client_id', 'address', 'phone', 'store_type', 'description']
+        fields = ['id', 'name', 'logo', 'url', 'client_id', 'address', 'phone', 'store_type_display',
+                  'description', 'services_detail']
 
         read_only_fields = ['client_id']

@@ -13,13 +13,12 @@ from customers.authentications import StoreAuthentication
 from customers.models import Store
 from customers.utils import code_generator
 from customers.tasks import send_forget_pass_code_task
-from customers.serializer import (UserRegisterSerializer,
-                                  VerifyUserSerializer,
-                                  UserSerializer,
-                                  ForgotPasswordSerializer,
-                                  VerifyResetPassCodeSerializer,
-                                  StoreSerializer,
-                                  StoreMinimalSerializer)
+from customers.serializers import (UserRegisterSerializer,
+                                   VerifyUserSerializer,
+                                   UserSerializer,
+                                   ForgotPasswordSerializer,
+                                   VerifyResetPassCodeSerializer,
+                                   StoreSerializer)
 from customers.permissions import IsOwner, IsEnabled
 from message_handler.handler import get_message
 from message_handler import messages

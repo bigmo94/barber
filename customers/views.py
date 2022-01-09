@@ -9,13 +9,17 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ParseError
 
+from customers.authentications import StoreAuthentication
+from customers.models import Store
 from customers.utils import code_generator
 from customers.tasks import send_forget_pass_code_task
 from customers.serializer import (UserRegisterSerializer,
                                   VerifyUserSerializer,
                                   UserSerializer,
                                   ForgotPasswordSerializer,
-                                  VerifyResetPassCodeSerializer, )
+                                  VerifyResetPassCodeSerializer,
+                                  StoreSerializer,
+                                  StoreMinimalSerializer)
 from customers.permissions import IsOwner, IsEnabled
 from message_handler.handler import get_message
 from message_handler import messages
@@ -97,3 +101,11 @@ class VerifyResetPassCodeAPIView(generics.GenericAPIView):
             raise ParseError(get_message(messages.ERROR_WRONG_VERIFY_CODE))
 
 
+class StoreProfileAPIView(generics.RetrieveUpdateAPIView):
+    authentication_classes = [StoreAuthentication]
+    permission_classes = []
+    queryset = Store.objects.all()
+    serializer_class = StoreSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(client_id=self.request.store.client_id)

@@ -4,7 +4,7 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
-from customers.models import Employee
+from customers.models import Employee, Store
 from customers.tasks import send_verification_code_task
 from customers.utils import code_generator
 from message_handler.handler import get_message
@@ -55,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'birthday', 'email',
+        fields = ['id', 'username', 'first_name', 'last_name', 'birthday', 'email',
                   'phone', 'gender_display', 'created_time', 'avatar']
 
 
@@ -70,4 +70,18 @@ class VerifyResetPassCodeSerializer(ForgotPasswordSerializer):
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['user__first_name', 'store__name']
+        fields = ['id', 'user__first_name', 'store__name']
+
+
+class StoreMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = ['id', 'name', 'logo', 'url']
+
+
+class StoreSerializer(StoreMinimalSerializer):
+    class Meta:
+        model = Store
+        fields = ['id', 'name', 'logo', 'url', 'client_id', 'address', 'phone', 'store_type', 'description']
+
+        read_only_fields = ['client_id']

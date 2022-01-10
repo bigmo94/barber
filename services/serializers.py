@@ -3,20 +3,18 @@ from rest_framework import serializers
 from services.models import EmployeeWorkingTime, Service
 
 
-class ServiceSerializer(serializers.ModelSerializer):
-    service_name = serializers.CharField(source='get_service_type_display', read_only=True)
-
-    class Meta:
-        model = Service
-        fields = ['service_name', 'price', 'discount', 'duration', 'description', 'created_time']
-
-
 class ServiceMinimalSerializer(serializers.ModelSerializer):
     service_name = serializers.CharField(source='get_service_type_display', read_only=True)
 
     class Meta:
         model = Service
         fields = ['service_name', 'price', 'duration']
+
+
+class ServiceSerializer(ServiceMinimalSerializer):
+    class Meta:
+        model = Service
+        fields = ['service_name', 'price', 'discount', 'duration', 'description', 'created_time']
 
 
 class EmployeeWorkingTimeDetailSerializer(serializers.ModelSerializer):

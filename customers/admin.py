@@ -10,14 +10,14 @@ User = get_user_model()
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     list_display = ['name', 'client_id', 'phone', 'address', 'store_type', 'is_active']
-    filter_horizontal = ['service']
+    filter_horizontal = ['services']
     readonly_fields = ['client_id']
 
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ['user', 'store', 'is_enable']
-    filter_horizontal = ['service']
+    filter_horizontal = ['services']
 
 
 @admin.register(User)

@@ -3,11 +3,15 @@ from django.utils.translation import ugettext_lazy as _
 SUCCESS_MESSAGE_READ = 2001
 SUCCESS_RESET_CODE_WAS_SENT = 2002
 SUCCESS_WORKING_TIME_WAS_RECORDED = 2003
+SUCCESS_EMPLOYEE_WAS_CREATED = 2006
+SUCCESS_EMPLOYEE_WAS_DELETED = 2005
 
 SUCCESS_MESSAGE_CODES = {
-    SUCCESS_MESSAGE_READ: _("The message was read"),
-    SUCCESS_RESET_CODE_WAS_SENT: _('The reset code was sent'),
-    SUCCESS_WORKING_TIME_WAS_RECORDED: _('The working time was recorded')
+    SUCCESS_MESSAGE_READ: _('The message was read.'),
+    SUCCESS_RESET_CODE_WAS_SENT: _('The reset code was sent.'),
+    SUCCESS_WORKING_TIME_WAS_RECORDED: _('The working time was recorded.'),
+    SUCCESS_EMPLOYEE_WAS_CREATED: _('The employee was created.'),
+    SUCCESS_EMPLOYEE_WAS_DELETED: _('The employee was deleted.'),
 }
 
 ERROR_UNKNOWN = 4000
@@ -19,18 +23,20 @@ ERROR_DUPLICATE_VALUE = 4005
 ERROR_INVALID_AUTHORIZATION_HEADER = 4006
 ERROR_STORE_NOF_FOUND = 4007
 ERROR_STORE_IS_INACTIVE = 4008
+ERROR_USER_IS_EMPLOYEE = 4009
 
 
 ERROR_MESSAGE_CODES = {
-    ERROR_UNKNOWN: _("Some error happened. please call administrator."),
-    ERROR_WRONG_VERIFY_CODE: _("Wrong verify code"),
-    ERROR_TOKEN_IS_NOT_VALID: _("Token is not valid."),
-    ERROR_DUPLICATE_VALUE: _("Values are duplicated"),
-    ERROR_BIRTHDAY_FIELD_IS_NOT_VALID: _('Birthday field is not valid'),
-    ERROR_NOT_FOUND_ANY_USER_BY_THIS_USERNAME: _('Not found any user by this username'),
-    ERROR_INVALID_AUTHORIZATION_HEADER: _("Invalid authorization header. No credentials provided."),
+    ERROR_UNKNOWN: _('Some error happened. please call administrator.'),
+    ERROR_WRONG_VERIFY_CODE: _('Wrong verify code.'),
+    ERROR_TOKEN_IS_NOT_VALID: _('Token is not valid.'),
+    ERROR_DUPLICATE_VALUE: _('Values are duplicated.'),
+    ERROR_BIRTHDAY_FIELD_IS_NOT_VALID: _('Birthday field is not valid.'),
+    ERROR_NOT_FOUND_ANY_USER_BY_THIS_USERNAME: _('Not found any user by this username.'),
+    ERROR_INVALID_AUTHORIZATION_HEADER: _('Invalid authorization header. No credentials provided.'),
     ERROR_STORE_NOF_FOUND: _('Store not found.'),
-    ERROR_STORE_IS_INACTIVE: _("Store is inactive."),
+    ERROR_STORE_IS_INACTIVE: _('Store is inactive.'),
+    ERROR_USER_IS_EMPLOYEE: _('This user is employee.'),
 }
 
 MESSAGE_CODES = {**ERROR_MESSAGE_CODES, **SUCCESS_MESSAGE_CODES}

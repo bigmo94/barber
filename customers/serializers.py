@@ -68,15 +68,25 @@ class VerifyResetPassCodeSerializer(ForgotPasswordSerializer):
     verify_code = serializers.IntegerField(write_only=True)
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
+class EmployeeMinimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['id', 'user__first_name', 'store__name']
+        fields = ['id', 'user', 'services']
+
+
+class EmployeeSerializer(EmployeeMinimalSerializer):
+    services_detail = ServiceMinimalSerializer(source='services', read_only=True, many=True)
+    store_name = serializers.CharField(source='store.name')
+    username = serializers.CharField(source='user.username')
+
+    class Meta:
+        model = Employee
+        fields = ['id', 'username', 'store_name', 'services_detail', 'is_enable']
 
 
 class StoreSerializer(serializers.ModelSerializer):
     store_type_display = serializers.CharField(source='get_store_type_display', read_only=True)
-    services_detail = ServiceMinimalSerializer(source='service', read_only=True, many=True)
+    services_detail = ServiceMinimalSerializer(source='services', read_only=True, many=True)
 
     class Meta:
         model = Store

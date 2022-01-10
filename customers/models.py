@@ -49,7 +49,7 @@ class Store(models.Model):
         (FOR_EVERYONE, _('for everyone')),
     )
 
-    service = models.ManyToManyField(to='services.Service', verbose_name=_('service'))
+    services = models.ManyToManyField(to='services.Service', verbose_name=_('services'))
     name = models.CharField(verbose_name=_('name'), max_length=255)
     logo = models.ImageField(verbose_name=_('logo'), upload_to='customers/store/logo', blank=True, null=True)
     address = models.TextField(verbose_name=_('address'))
@@ -75,7 +75,7 @@ class Store(models.Model):
 class Employee(models.Model):
     user = models.ForeignKey(to='User', verbose_name=_('user'), related_name='users', on_delete=models.PROTECT)
     store = models.ForeignKey(to='Store', verbose_name=_('store'), related_name='stores', on_delete=models.PROTECT)
-    service = models.ManyToManyField(to='services.Service', verbose_name=_('service'))
+    services = models.ManyToManyField(to='services.Service', verbose_name=_('services'))
     is_enable = models.BooleanField(verbose_name=_('is enable'), default=True)
 
     class Meta:

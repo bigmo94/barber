@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from django.contrib.auth import get_user_model
 from rest_framework import mixins
 from rest_framework.decorators import action
@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ParseError
 
 from customers.authentications import StoreAuthentication
-from customers.models import Store
+from customers.models import Store, Employee
 from customers.utils import code_generator
 from customers.tasks import send_forget_pass_code_task
 from customers.serializers import (UserRegisterSerializer,
@@ -18,7 +18,9 @@ from customers.serializers import (UserRegisterSerializer,
                                    UserSerializer,
                                    ForgotPasswordSerializer,
                                    VerifyResetPassCodeSerializer,
-                                   StoreSerializer)
+                                   StoreSerializer,
+                                   EmployeeSerializer,
+                                   EmployeeMinimalSerializer)
 from customers.permissions import IsOwner, IsEnabled
 from message_handler.handler import get_message
 from message_handler import messages
@@ -26,8 +28,8 @@ from message_handler import messages
 User = get_user_model()
 
 
-class UserRegisterViewSet(viewsets.GenericViewSet,
-                          mixins.CreateModelMixin):
+class UserRegisterViewSet(mixins.CreateModelMixin,
+                          viewsets.GenericViewSet):
     queryset = User.objects.all()
     lookup_field = 'pk'
 
@@ -108,3 +110,38 @@ class StoreProfileAPIView(generics.RetrieveUpdateAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(client_id=self.request.store.client_id)
+
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    authentication_classes = [StoreAuthentication]
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+    http_method_names = ['get', 'post', 'delete', 'patch']
+
+    def get_queryset(self):
+        return super().get_queryset().filter(store__client_id=self.request.store.client_id)
+
+    def get_serializer_class(self):
+        return {
+            'create': EmployeeMinimalSerializer
+        }.get(self.action, self.serializer_class)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.get(username=serializer.validated_data.get('user'))
+        if user.is_employee:
+            raise ParseError(get_message(messages.ERROR_USER_IS_EMPLOYEE))
+        employee, created = Employee.objects.get_or_create(store=request.store, user=user)
+        employee.services.set(serializer.validated_data.get('services'))
+        user.is_employee = True
+        user.save()
+        return Response(get_message(messages.SUCCESS_EMPLOYEE_WAS_CREATED))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        user = instance.user
+        user.is_employee = False
+        user.save()
+        return Response(get_message(messages.SUCCESS_EMPLOYEE_WAS_DELETED), status=status.HTTP_204_NO_CONTENT)

@@ -1,4 +1,5 @@
 import uuid
+import datetime
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
@@ -49,7 +50,6 @@ class Store(models.Model):
         (FOR_EVERYONE, _('for everyone')),
     )
 
-    services = models.ManyToManyField(to='services.Service', verbose_name=_('services'))
     name = models.CharField(verbose_name=_('name'), max_length=255)
     logo = models.ImageField(verbose_name=_('logo'), upload_to='customers/store/logo', blank=True, null=True)
     address = models.TextField(verbose_name=_('address'))
@@ -84,3 +84,13 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.user.get_full_name()
+
+
+class EmployeeWorkingTime(models.Model):
+    employee = models.ForeignKey(to='Employee', verbose_name=_('employee'), on_delete=models.CASCADE)
+    date = models.DateField(verbose_name='date')
+    started_time = models.TimeField(verbose_name=_('started time'), default=datetime.time(hour=10, minute=0))
+    ended_time = models.TimeField(verbose_name=_('ended_time'), default=datetime.time(hour=22, minute=0))
+
+    def __str__(self):
+        return self.employee.user.get_full_name()

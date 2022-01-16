@@ -25,12 +25,14 @@ class Service(models.Model):
         (TYPE_SOLARIUM, _('Solarium')),
         (TYPE_SKIN_CLEANING, _('Skin Cleaning')),
     )
+
+    store = models.ForeignKey(to='customers.Store', related_name='services', verbose_name=_('store'), on_delete=models.CASCADE)
     service_type = models.IntegerField(verbose_name=_('service type'), choices=SERVICES)
     price = models.IntegerField(verbose_name=_('Price'))
     discount = models.DecimalField(verbose_name=_('discount'), max_digits=5, decimal_places=2, null=True, blank=True,
                                    validators=[MinValueValidator(0), MaxValueValidator(100)])
     duration = models.DurationField(verbose_name=_('duration'), default=datetime.timedelta(hours=1))
-    description = models.CharField(verbose_name=_('Descriptions'), max_length=256, blank=True, null=True)
+    description = models.CharField(verbose_name=_('descriptions'), max_length=256, blank=True, null=True)
     created_time = models.DateField(verbose_name=_('created time'), auto_now_add=True)
     updated_time = models.DateField(verbose_name=_('updated time'), auto_now=True)
 
@@ -79,12 +81,3 @@ class Reservation(models.Model):
     def __str__(self):
         return "{} - {} - {}".format(self.date, self.started_time, self.ended_time)
 
-
-class EmployeeWorkingTime(models.Model):
-    employee = models.ForeignKey(to='customers.Employee', verbose_name=_('employee'), on_delete=models.CASCADE)
-    date = models.DateField(verbose_name='date')
-    started_time = models.TimeField(verbose_name=_('started time'), default=datetime.time(hour=10, minute=0))
-    ended_time = models.TimeField(verbose_name=_('ended_time'), default=datetime.time(hour=22, minute=0))
-
-    def __str__(self):
-        return self.employee.user.get_full_name()

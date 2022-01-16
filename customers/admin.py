@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 
-from customers.models import Store, Employee
+from customers.models import Store, Employee, EmployeeWorkingTime
 
 User = get_user_model()
 
@@ -10,7 +10,6 @@ User = get_user_model()
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     list_display = ['name', 'client_id', 'phone', 'address', 'store_type', 'is_active']
-    filter_horizontal = ['services']
     readonly_fields = ['client_id']
 
 
@@ -34,3 +33,8 @@ class UserAdmin(admin.ModelAdmin):
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
+
+
+@admin.register(EmployeeWorkingTime)
+class EmployeeWorkingTimeAdmin(admin.ModelAdmin):
+    list_display = ['employee', 'date', 'started_time', 'ended_time']

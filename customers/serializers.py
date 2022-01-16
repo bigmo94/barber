@@ -4,11 +4,11 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
-from customers.models import Employee, Store
+from customers.models import Employee, Store, EmployeeWorkingTime
 from customers.tasks import send_verification_code_task
 from customers.utils import code_generator
-from message_handler.handler import get_message
 from message_handler import messages
+from message_handler.handler import get_message
 from services.serializers import ServiceMinimalSerializer
 
 User = get_user_model()
@@ -90,13 +90,29 @@ class EmployeeSerializer(EmployeeMinimalSerializer):
         fields = ['id', 'username', 'store_name', 'services_detail', 'is_enable']
 
 
+class EmployeeWorkingTimeDetailSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source='employee.user.username', read_only=True)
+    store_name = serializers.CharField(source='employee.store.name', read_only=True)
+
+    class Meta:
+        model = EmployeeWorkingTime
+        fields = ['id', 'employee_name', 'store_name', 'date', 'started_time', 'ended_time']
+
+
+class EmployeeWorkingTimeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeWorkingTime
+        fields = ['employee', 'date', 'started_time', 'ended_time']
+        extra_kwargs = {'employee': {'read_only': True}}
+
+
 class StoreSerializer(serializers.ModelSerializer):
     store_type_display = serializers.CharField(source='get_store_type_display', read_only=True)
-    services_detail = ServiceMinimalSerializer(source='services', read_only=True, many=True)
+    services = ServiceMinimalSerializer(read_only=True, many=True)
 
     class Meta:
         model = Store
-        fields = ['id', 'name', 'logo', 'url', 'client_id', 'address', 'phone', 'store_type_display',
-                  'description', 'services_detail']
+        fields = ['id', 'name', 'logo', 'url', 'client_id', 'address', 'phone', 'store_type', 'store_type_display',
+                  'description', 'services']
 
         read_only_fields = ['client_id']

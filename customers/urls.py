@@ -6,7 +6,8 @@ from customers.views import (UserRegisterViewSet,
                              ForgetPasswordAPIView,
                              StoreProfileAPIView,
                              StoreEmployeeViewSet,
-                             EmployeeViewSet)
+                             EmployeeViewSet,
+                             EmployeeWorkingTimeViewSet)
 from rest_framework.routers import DefaultRouter
 
 app_name = 'customers'
@@ -15,6 +16,7 @@ router = DefaultRouter()
 router.register(r'register', UserRegisterViewSet, basename='register')
 router.register(r'store-employee', StoreEmployeeViewSet, basename='store_employee')
 router.register(r'employee', EmployeeViewSet, basename='employee')
+router.register(r'employee-working-time', EmployeeWorkingTimeViewSet, basename='employee_working_time')
 
 urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

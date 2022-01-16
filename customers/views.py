@@ -1,18 +1,17 @@
-from django.core.cache import cache
-from rest_framework import viewsets, generics, status
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework import mixins
+from rest_framework import viewsets, generics, status
 from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.exceptions import ParseError
 
 from customers.authentications import StoreAuthentication
-from customers.models import Store, Employee
-from customers.utils import code_generator
-from customers.tasks import send_forget_pass_code_task
+from customers.models import Store, Employee, EmployeeWorkingTime
+from customers.permissions import IsOwner, IsEnabled, IsEmployee
 from customers.serializers import (UserRegisterSerializer,
                                    VerifyUserSerializer,
                                    UserSerializer,
@@ -21,10 +20,13 @@ from customers.serializers import (UserRegisterSerializer,
                                    StoreSerializer,
                                    EmployeeSerializer,
                                    EmployeeMinimalSerializer,
-                                   EmployeeJustPatch)
-from customers.permissions import IsOwner, IsEnabled
-from message_handler.handler import get_message
+                                   EmployeeJustPatch,
+                                   EmployeeWorkingTimeSerializer,
+                                   EmployeeWorkingTimeDetailSerializer)
+from customers.tasks import send_forget_pass_code_task
+from customers.utils import code_generator
 from message_handler import messages
+from message_handler.handler import get_message
 
 User = get_user_model()
 
@@ -109,8 +111,8 @@ class StoreProfileAPIView(generics.RetrieveUpdateAPIView):
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
 
-    def get_queryset(self):
-        return super().get_queryset().filter(client_id=self.request.store.client_id)
+    def get_object(self):
+        return self.request.store
 
 
 class StoreEmployeeViewSet(viewsets.ModelViewSet):
@@ -177,3 +179,31 @@ class EmployeeViewSet(mixins.RetrieveModelMixin,
         user.is_employee = False
         user.save()
         return Response(get_message(messages.SUCCESS_EMPLOYEE_WAS_DELETED), status=status.HTTP_204_NO_CONTENT)
+
+
+class EmployeeWorkingTimeViewSet(viewsets.GenericViewSet,
+                                 mixins.ListModelMixin,
+                                 mixins.RetrieveModelMixin,
+                                 mixins.DestroyModelMixin,
+                                 mixins.UpdateModelMixin):
+    queryset = EmployeeWorkingTime.objects.all()
+    serializer_class = EmployeeWorkingTimeDetailSerializer
+    permission_classes = [IsEmployee]
+    authentication_classes = [JWTAuthentication]
+
+    def get_serializer_class(self):
+        self.serializer_class = {
+            "create": EmployeeWorkingTimeSerializer
+        }.get(self.action, self.serializer_class)
+
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(employee__user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        employee = Employee.objects.get(user=self.request.user)
+        EmployeeWorkingTime.objects.get_or_create(employee=employee, **serializer.validated_data)
+        return Response(get_message(messages.SUCCESS_WORKING_TIME_WAS_RECORDED))

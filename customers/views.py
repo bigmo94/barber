@@ -20,7 +20,8 @@ from customers.serializers import (UserRegisterSerializer,
                                    VerifyResetPassCodeSerializer,
                                    StoreSerializer,
                                    EmployeeSerializer,
-                                   EmployeeMinimalSerializer)
+                                   EmployeeMinimalSerializer,
+                                   EmployeeJustPatch)
 from customers.permissions import IsOwner, IsEnabled
 from message_handler.handler import get_message
 from message_handler import messages
@@ -112,7 +113,7 @@ class StoreProfileAPIView(generics.RetrieveUpdateAPIView):
         return super().get_queryset().filter(client_id=self.request.store.client_id)
 
 
-class EmployeeViewSet(viewsets.ModelViewSet):
+class StoreEmployeeViewSet(viewsets.ModelViewSet):
     authentication_classes = [StoreAuthentication]
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
@@ -137,6 +138,37 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         user.is_employee = True
         user.save()
         return Response(get_message(messages.SUCCESS_EMPLOYEE_WAS_CREATED))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        user = instance.user
+        user.is_employee = False
+        user.save()
+        return Response(get_message(messages.SUCCESS_EMPLOYEE_WAS_DELETED), status=status.HTTP_204_NO_CONTENT)
+
+
+class EmployeeViewSet(mixins.RetrieveModelMixin,
+                      mixins.DestroyModelMixin,
+                      mixins.UpdateModelMixin,
+                      viewsets.GenericViewSet):
+    authentication_classes = [JWTAuthentication]
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+    permission_classes = [IsOwner]
+    http_method_names = ['get', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        return {
+            'partial_update': EmployeeJustPatch
+        }.get(self.action, self.serializer_class)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(get_message(messages.SUCCESS_PROFILE_WAS_UPDATED))
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

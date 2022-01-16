@@ -20,7 +20,7 @@ class IsOwner(BasePermission):
 
     def has_permission(self, request, view):
         flag = True
-        if not (request.user and request.user == view.get_object()):
+        if not (request.user and request.user == view.get_object() or request.user == view.get_object().user):
             flag = False
         return flag
 

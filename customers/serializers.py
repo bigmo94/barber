@@ -74,6 +74,12 @@ class EmployeeMinimalSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'services']
 
 
+class EmployeeJustPatch(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = ['services']
+
+
 class EmployeeSerializer(EmployeeMinimalSerializer):
     services_detail = ServiceMinimalSerializer(source='services', read_only=True, many=True)
     store_name = serializers.CharField(source='store.name')
